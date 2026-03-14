@@ -109,6 +109,16 @@ class TodoNotifier extends Notifier<List<Todo>> {
     _timers.remove(id);
   }
 
+  void markDone(String id) {
+    if (_timers.containsKey(id)) {
+      stopTimer(id);
+    }
+    final todoIndex = state.indexWhere((t) => t.id == id);
+    if (todoIndex != -1) {
+      updateTodo(state[todoIndex].copyWith(status: 'DONE', remainingTimeInSeconds: 0));
+    }
+  }
+
   void disposeAllTimers() {
     for (var timer in _timers.values) {
       timer.cancel();
