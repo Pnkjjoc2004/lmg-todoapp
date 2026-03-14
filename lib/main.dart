@@ -1,7 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lmg_todo_app/services/hive_service.dart';
+import 'package:lmg_todo_app/pages/todo_list_page.dart';
+import 'package:lmg_todo_app/providers/todo_provider.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  final hiveService = HiveService();
+  await hiveService.init();
+  
+  runApp(
+    ProviderScope(
+      overrides: [
+        hiveServiceProvider.overrideWithValue(hiveService),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -13,18 +29,10 @@ class MyApp extends StatelessWidget {
       title: 'LMG ToDo App',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'LMG ToDo App'),
+      home: const TodoListPage(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Text('LMG ToDo App')));
-  }
-}
