@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lmg_todo_app/models/todo_model.dart';
 import 'package:lmg_todo_app/providers/todo_provider.dart';
+import 'package:lmg_todo_app/services/auth_service.dart';
 import 'package:lmg_todo_app/pages/todo_details_page.dart';
 
 class TodoListPage extends ConsumerWidget {
@@ -19,6 +20,15 @@ class TodoListPage extends ConsumerWidget {
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              ref.read(guestProvider.notifier).exitGuestMode();
+              ref.read(authServiceProvider).signOut();
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
