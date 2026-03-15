@@ -2,9 +2,34 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lmg_todo_app/models/todo_model.dart';
 import 'package:lmg_todo_app/services/hive_service.dart';
+import 'package:lmg_todo_app/services/notification_service.dart';
 
 final hiveServiceProvider = Provider<HiveService>((ref) {
   throw UnimplementedError('hiveServiceProvider must be overridden in ProviderScope');
+});
+
+class SearchQueryNotifier extends Notifier<String> {
+  @override
+  String build() => '';
+
+  void setQuery(String query) {
+    state = query;
+  }
+}
+
+final searchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(() {
+  return SearchQueryNotifier();
+});
+
+final filteredTodoProvider = Provider<List<Todo>>((ref) {
+  final todos = ref.watch(todoProvider);
+  final query = ref.watch(searchQueryProvider).toLowerCase();
+  
+  if (query.isEmpty) {
+    return todos;
+  }
+  
+  return todos.where((todo) => todo.title.toLowerCase().contains(query)).toList();
 });
 
 final todoProvider = NotifierProvider<TodoNotifier, List<Todo>>(() {
@@ -46,6 +71,7 @@ class TodoNotifier extends Notifier<List<Todo>> {
     if (initialTodo.remainingTimeInSeconds <= 0) {
       if (initialTodo.status != 'DONE') {
         updateTodo(initialTodo.copyWith(status: 'DONE'));
+        NotificationService.instance.showStateChangeNotification(initialTodo.title, 'Done');
       }
       return;
     }
@@ -82,6 +108,7 @@ class TodoNotifier extends Notifier<List<Todo>> {
         ];
 
         if (newRemainingTime == 0) {
+          NotificationService.instance.showStateChangeNotification(updatedTodo.title, 'Done');
           stopTimer(id);
         }
       } else {
@@ -116,6 +143,7 @@ class TodoNotifier extends Notifier<List<Todo>> {
     final todoIndex = state.indexWhere((t) => t.id == id);
     if (todoIndex != -1) {
       updateTodo(state[todoIndex].copyWith(status: 'DONE', remainingTimeInSeconds: 0));
+      NotificationService.instance.showStateChangeNotification(state[todoIndex].title, 'Done');
     }
   }
 

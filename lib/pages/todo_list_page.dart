@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lmg_todo_app/models/todo_model.dart';
@@ -9,7 +10,7 @@ class TodoListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final todos = ref.watch(todoProvider);
+    final todos = ref.watch(filteredTodoProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -19,21 +20,36 @@ class TodoListPage extends ConsumerWidget {
         ),
         centerTitle: true,
       ),
-      body: todos.isEmpty
-          ? const Center(
-              child: Text(
-                'No Todos yet. Add one!',
-                style: TextStyle(fontSize: 16),
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.only(bottom: 80),
-              itemCount: todos.length,
-              itemBuilder: (context, index) {
-                final todo = todos[index];
-                return TodoListItem(todo: todo);
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: CupertinoSearchTextField(
+              onChanged: (value) {
+                ref.read(searchQueryProvider.notifier).setQuery(value);
               },
+              placeholder: 'Search Todos...',
             ),
+          ),
+          Expanded(
+            child: todos.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No Todos found.',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 80),
+                    itemCount: todos.length,
+                    itemBuilder: (context, index) {
+                      final todo = todos[index];
+                      return TodoListItem(todo: todo);
+                    },
+                  ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showModalBottomSheet(
